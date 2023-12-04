@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 
 import Section from 'components/Section';
 import ButtonsBar from 'components/ButtonsBar';
@@ -7,64 +7,53 @@ import Notification from 'components/Notification';
 
 import { Wrapper } from './App.styled';
 
-class App extends Component<{}, AppState> {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
+const App = () => {
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setDad] = useState(0);
+
+  const onLeaveFeedback = (e: React.MouseEvent<HTMLButtonElement>) => {
+    switch (e.currentTarget.name) {
+      case 'good':
+        setGood(prevState => prevState + 1);
+        break;
+      case 'neutral':
+        setNeutral(prevState => prevState + 1);
+        break;
+      case 'bad':
+        setDad(prevState => prevState + 1);
+        break;
+      default:
+        new Error('The name was not found');
+    }
   };
 
-  onLeaveFeedback = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const name = e.currentTarget.name as keyof AppState;
+  const total = good + neutral + bad;
+  const key = Object.keys({ good, neutral, bad });
+  const percentage = Math.round((good * 100) / total);
 
-    this.setState(
-      prevState =>
-        ({
-          [name]: prevState[name] + 1,
-        }) as AppState
-    );
-  };
+  return (
+    <Wrapper>
+      <Section title={'Please leave feedback'}>
+        <ButtonsBar options={key} onLeaveFeedback={onLeaveFeedback} />
+      </Section>
 
-  countTotalFeedback = () => {
-    const { good, neutral, bad } = this.state;
-    return good + neutral + bad;
-  };
-
-  countPositiveFeedbackPercentage = () => {
-    const total = this.countTotalFeedback();
-    const { good } = this.state;
-    return Math.round((good * 100) / total) || 0;
-  };
-
-  render() {
-    const { good, neutral, bad } = this.state;
-    const total = this.countTotalFeedback();
-    const positivePercentage = this.countPositiveFeedbackPercentage();
-    const keys = Object.keys(this.state);
-
-    return (
-      <Wrapper>
-        <Section title={'Please leave feedback'}>
-          <ButtonsBar options={keys} onLeaveFeedback={this.onLeaveFeedback} />
+      {!!total ? (
+        <Section title={'Statistics'}>
+          <Statistics
+            good={good}
+            neutral={neutral}
+            bad={bad}
+            total={total}
+            positivePercentage={percentage}
+          />
         </Section>
-
-        {!!total ? (
-          <Section title={'Statistics'}>
-            <Statistics
-              good={good}
-              neutral={neutral}
-              bad={bad}
-              total={total}
-              positivePercentage={positivePercentage}
-            />
-          </Section>
-        ) : (
-          <Notification />
-        )}
-      </Wrapper>
-    );
-  }
-}
+      ) : (
+        <Notification />
+      )}
+    </Wrapper>
+  );
+};
 
 export default App;
 
